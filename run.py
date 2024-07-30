@@ -54,7 +54,7 @@ def login_auth(login_type, push_type, host_infos, command):
     elif login_type == "http":
         message += http_multiple_connections(host_infos)
     else:
-        message += http_multiple_connections(host_infos)
+        message += ssh_multiple_connections(host_infos, command)
     
     
     # 推送方式
