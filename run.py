@@ -94,7 +94,7 @@ def ssh_multiple_connections(host_infos, command) -> str:
         except Exception as e:
             print(f"用户：{username}，连接 {hostname} 时出错: {str(e)}")
     
-    content += "SSH服务器执行命令：\n"
+    content += "SSH服务器执行命令："+ command +"\n"
     user_num = len(stdout_contents)
     for msg, hostname in zip(hostnames, hostnames):
         content += f"服务器：{hostname},回显信息：{msg}\n"
