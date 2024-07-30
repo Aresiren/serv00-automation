@@ -7,6 +7,7 @@ import json
 from datetime import datetime, timezone, timedelta
 import asyncio
 from pyppeteer import launch
+import random
 
 '''
 
@@ -46,7 +47,8 @@ message = '防serv00回收服务器账号自动化脚本运行\n'
 browser = None
 
 def main_fuc():
-    login_auth(LOGIN_TYPE, push, host_infos, commands[0])
+    # login_auth(LOGIN_TYPE, push, host_infos, commands[0])
+    login_auth(LOGIN_TYPE, push, host_infos, random.choice(commands))
     print('ending...')
     
 def login_auth(login_type, push_type, host_infos, command):
