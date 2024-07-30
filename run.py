@@ -41,7 +41,7 @@ LOGIN_TYPE = os.getenv('LOGIN_TYPE') # ssh or telegram or http
 ssh_info_str = os.getenv('SSH_INFO', '[]')
 host_infos = json.loads(ssh_info_str)
 
-commands = ['whoami', 'cat /etc/issue', 'whoami', 'uname -a']
+commands = ['whoami', 'top', 'ps aux', 'uname -a']
 message = '防serv00回收服务器账号自动化脚本运行\n'
 # 全局浏览器实例
 browser = None
@@ -96,7 +96,7 @@ def ssh_multiple_connections(host_infos, command) -> str:
     
     content += "SSH服务器执行命令："+ command +"\n"
     user_num = len(stdout_contents)
-    for msg, hostname in zip(hostnames, hostnames):
+    for hostname, msg in zip(hostnames, stdout_contents):
         content += f"服务器：{hostname},回显信息：{msg}\n"
     
     beijing_timezone = timezone(timedelta(hours=8))
