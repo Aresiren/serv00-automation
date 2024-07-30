@@ -69,7 +69,7 @@ def login_auth(login_type, push_type, host_infos, command):
 def ssh_multiple_connections(host_infos, command) -> str:
     content = "SSH服务器登录信息：\n"
     
-    users = []
+    stdout_contents = []
     hostnames = []
     for host_info in host_infos:
         hostname = host_info['hostname']
@@ -80,17 +80,18 @@ def ssh_multiple_connections(host_infos, command) -> str:
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=hostname, port=22, username=username, password=password)
             stdin, stdout, stderr = ssh.exec_command(command)
-            user = stdout.read().decode().strip()
-            users.append(user)
+            stdout_content = stdout.read().decode().strip()
+            print('ssh 回显信息：',stdout_content)
+            stdout_contents.append(stdout_content)
             hostnames.append(hostname)
             ssh.close()
         except Exception as e:
             print(f"用户：{username}，连接 {hostname} 时出错: {str(e)}")
     
     content += "SSH服务器登录信息：\n"
-    user_num = len(users)
-    for user, hostname in zip(users, hostnames):
-        content += f"用户名：{user}，服务器：{hostname}\n"
+    user_num = len(stdout_contents)
+    for msg, hostname in zip(hostnames, hostnames):
+        content += f"服务器：{hostname},回显信息：{msg}\n"
     
     beijing_timezone = timezone(timedelta(hours=8))
     time = datetime.now(beijing_timezone).strftime('%Y-%m-%d %H:%M:%S')
