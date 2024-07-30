@@ -5,14 +5,16 @@ import paramiko
 import requests
 import json
 from datetime import datetime, timezone, timedelta
+import asyncio
+from pyppeteer import launch
 
 '''
 
 SSH_INFO:
 [
-  {"username": "serv00的账号", "password": "serv00的密码", "panel": "panel6.serv00.com"},
-  {"username": "ct8的账号", "password": "ct8的密码", "panel": "panel.ct8.pl"},
-  {"username": "user2", "password": "password2", "panel": "panel6.serv00.com"}
+  {"hostname": "xx.serv00.com","username": "serv00的账号", "password": "serv00的密码", "panel": "panel6.serv00.com"},
+  {"hostname": "s5.serv00.com","username": "ct8的账号", "password": "ct8的密码", "panel": "panel.ct8.pl"},
+  {"hostname": "s6.serv00.com","username": "user2", "password": "password2", "panel": "panel6.serv00.com"}
 ]
 
 LOGIN_TYPE:
@@ -38,8 +40,10 @@ LOGIN_TYPE = os.getenv('LOGIN_TYPE') # ssh or telegram or http
 ssh_info_str = os.getenv('SSH_INFO', '[]')
 host_infos = json.loads(ssh_info_str)
 
-commands = ['whoami', 'cat /etc/issue', 'whoami']
-message = 'serv00&ct8自动化脚本运行\n'
+commands = ['whoami', 'cat /etc/issue', 'whoami', 'uname -a']
+message = '防serv00回收服务器账号自动化脚本运行\n'
+# 全局浏览器实例
+browser = None
 
 def main_fuc():
     login_auth(LOGIN_TYPE, push, host_infos, commands[0])
@@ -47,7 +51,7 @@ def main_fuc():
     
 def login_auth(login_type, push_type, host_infos, command):
     global message
-    message = 'serv00&ct8自动化脚本运行\n'
+    message = 'serv00认证自动化脚本运行\n'
     # 登录方式
     if login_type == "ssh":
         message += ssh_multiple_connections(host_infos, command)
@@ -67,7 +71,7 @@ def login_auth(login_type, push_type, host_infos, command):
     
     
 def ssh_multiple_connections(host_infos, command) -> str:
-    content = "SSH服务器登录信息：\n"
+    content = "SSH服务器登录：\n"
     
     stdout_contents = []
     hostnames = []
@@ -88,7 +92,7 @@ def ssh_multiple_connections(host_infos, command) -> str:
         except Exception as e:
             print(f"用户：{username}，连接 {hostname} 时出错: {str(e)}")
     
-    content += "SSH服务器登录信息：\n"
+    content += "SSH服务器执行命令：\n"
     user_num = len(stdout_contents)
     for msg, hostname in zip(hostnames, hostnames):
         content += f"服务器：{hostname},回显信息：{msg}\n"
@@ -110,8 +114,59 @@ def http_multiple_connections(host_infos):
         panel = host_info['panel']
         
         url = f'https://{panel}/login/?next=/'
+        # 调用异步函数
+        result = run(login(username, password, panel))
+        print(result)
 
 # push = os.getenv('PUSH')
+
+# 运行异步函数的方式
+def run(coroutine):
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(coroutine)
+
+async def login(username, password, panel):
+    global browser
+
+    page = None  # 确保 page 在任何情况下都被定义
+    serviceName = 'ct8' if 'ct8' in panel else 'serv00'
+    try:
+        if not browser:
+            browser = await launch(headless=True, args=['--no-sandbox', '--disable-setuid-sandbox'])
+
+        page = await browser.newPage()
+        url = f'https://{panel}/login/?next=/'
+        await page.goto(url)
+
+        username_input = await page.querySelector('#id_username')
+        if username_input:
+            await page.evaluate('''(input) => input.value = ""''', username_input)
+
+        await page.type('#id_username', username)
+        await page.type('#id_password', password)
+
+        login_button = await page.querySelector('#submit')
+        if login_button:
+            await login_button.click()
+        else:
+            raise Exception('无法找到登录按钮')
+
+        await page.waitForNavigation()
+
+        is_logged_in = await page.evaluate('''() => {
+            const logoutButton = document.querySelector('a[href="/logout/"]');
+            return logoutButton !== null;
+        }''')
+
+        return is_logged_in
+
+    except Exception as e:
+        print(f'{serviceName}账号 {username} 登录时出现错误: {e}')
+        return False
+
+    finally:
+        if page:
+            await page.close()
 
 def mail_push(url, content):
     data = {
