@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 import asyncio
 from pyppeteer import launch
 import random
+import time
 
 '''
 
@@ -78,6 +79,9 @@ def ssh_multiple_connections(host_infos, command) -> str:
     stdout_contents = []
     hostnames = []
     for host_info in host_infos:
+        # 生成一个介于1.5秒和3.8秒之间的随机延时时间
+        delay = random.uniform(1.5, 3.8)
+        time.sleep(delay)
         hostname = host_info['hostname']
         username = host_info['username']
         password = host_info['password']
@@ -110,6 +114,9 @@ def ssh_multiple_connections(host_infos, command) -> str:
 
 def http_multiple_connections(host_infos):
     for host_info in host_infos:
+        # 生成一个介于1.5秒和3.8秒之间的随机延时时间
+        delay = random.uniform(1.5, 3.8)
+        time.sleep(delay)
         hostname = host_info['hostname']
         username = host_info['username']
         password = host_info['password']
