@@ -79,6 +79,7 @@ def ssh_multiple_connections(host_infos, command) -> str:
     
     stdout_contents = []
     hostnames = []
+    usernames = []
     for host_info in host_infos:
         # 生成一个介于1.5秒和3.8秒之间的随机延时时间
         import time
@@ -96,6 +97,7 @@ def ssh_multiple_connections(host_infos, command) -> str:
             print('ssh 回显信息：',stdout_content)
             stdout_contents.append(stdout_content)
             hostnames.append(hostname)
+            usernames.append(username)
             
             delay = random.uniform(1.5, 3.8)
             time.sleep(delay)
@@ -105,8 +107,8 @@ def ssh_multiple_connections(host_infos, command) -> str:
     
     content += "SSH服务器执行命令："+ command +"\n"
     user_num = len(stdout_contents)
-    for hostname, msg in zip(hostnames, stdout_contents):
-        content += f"服务器：{hostname},回显信息：{msg}\n"
+    for hostname, msg, username in zip(hostnames, stdout_contents, usernames):
+        content += f"服务器：{hostname},用户名：{username},回显信息：{msg}\n"
     
     beijing_timezone = timezone(timedelta(hours=8))
     time = datetime.now(beijing_timezone).strftime('%Y-%m-%d %H:%M:%S')
