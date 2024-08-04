@@ -49,6 +49,7 @@ browser = None
 
 def main_fuc():
     # login_auth(LOGIN_TYPE, push, host_infos, commands[0])
+    random.shuffle(host_infos)
     login_auth(LOGIN_TYPE, push, host_infos, random.choice(commands))
     print('ending...')
     
