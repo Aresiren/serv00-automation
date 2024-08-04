@@ -95,6 +95,9 @@ def ssh_multiple_connections(host_infos, command) -> str:
             print('ssh 回显信息：',stdout_content)
             stdout_contents.append(stdout_content)
             hostnames.append(hostname)
+            
+            delay = random.uniform(1.5, 3.8)
+            time.sleep(delay)
             ssh.close()
         except Exception as e:
             print(f"用户：{username}，连接 {hostname} 时出错: {str(e)}")
@@ -128,6 +131,8 @@ def http_multiple_connections(host_infos):
         # 调用异步函数
         result = run(login(username, password, panel))
         print(result)
+        delay = random.uniform(1.5, 3.8)
+        time.sleep(delay)
 
 # push = os.getenv('PUSH')
 
