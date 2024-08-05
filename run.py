@@ -45,7 +45,7 @@ LOGIN_TYPE = os.getenv('LOGIN_TYPE') # ssh or telegram or http
 ssh_info_str = os.getenv('SSH_INFO', '[]')
 host_infos = json.loads(ssh_info_str)
 
-commands = ['whoami', 'top', 'ps aux', 'uname -a']
+commands = ['whoami', 'top', 'ps aux', 'uname -a', 'df -h', 'free -h']
 message = '防serv00回收服务器账号自动化脚本运行\n'
 # 全局浏览器实例
 browser = None
@@ -110,6 +110,8 @@ def ssh_multiple_connections(host_infos, command) -> str:
             stdin, stdout, stderr = ssh.exec_command(command)
             stdin.close()
 
+            random_exe_cmd(ssh, commands)
+
             stdout_content = stdout.read().decode().strip()
             print('ssh 回显信息：',stdout_content)
             # stdout_contents.append(stdout_content)
@@ -139,6 +141,20 @@ def ssh_multiple_connections(host_infos, command) -> str:
 
 def shorten_string(text, width, placeholder='...'):
     return textwrap.shorten(text, width, placeholder=placeholder)
+
+def random_exe_cmd(ssh_client, commands=[]):
+    if commands:
+        i = random.randint(1, len(commands))
+        for command in commands[0:i]:
+            stdin, stdout, stderr = ssh_client.exec_command(command)
+            stdin.close()
+
+            stdout_content = stdout.read().decode().strip()
+            print('random_exe_cmd：', command, stdout_content)
+            import time
+            delay = random.uniform(1.5, 3.8)
+            time.sleep(delay)
+
 
 def http_multiple_connections(host_infos):
     for host_info in host_infos:
