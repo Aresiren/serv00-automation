@@ -10,6 +10,7 @@ from pyppeteer import launch
 import random
 import time
 import io
+import textwrap
 
 '''
 
@@ -111,7 +112,8 @@ def ssh_multiple_connections(host_infos, command) -> str:
 
             stdout_content = stdout.read().decode().strip()
             print('ssh 回显信息：',stdout_content)
-            stdout_contents.append(stdout_content)
+            # stdout_contents.append(stdout_content)
+            stdout_contents.append(shorten_string(stdout_content, width=16))
             hostnames.append(hostname)
             usernames.append(username)
             
@@ -134,6 +136,9 @@ def ssh_multiple_connections(host_infos, command) -> str:
     content += f"本次登录用户共： {user_num} 个\n登录时间：{time}\n登录IP：{loginip}"
     return content
 
+
+def shorten_string(text, width, placeholder='...'):
+    return textwrap.shorten(text, width, placeholder=placeholder)
 
 def http_multiple_connections(host_infos):
     for host_info in host_infos:
