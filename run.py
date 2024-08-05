@@ -91,8 +91,8 @@ def ssh_multiple_connections(host_infos, command) -> str:
         username = host_info['username']
         password = host_info['password']
         pkeyflag ="0"
-        pkeyflagstr = host_info['pkeyflag']
         if 'pkeyflag' in host_info.keys():
+            pkeyflagstr = host_info['pkeyflag']
             pkeyflag=pkeyflagstr
         try:
             ssh = paramiko.SSHClient()
