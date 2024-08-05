@@ -9,6 +9,7 @@ import asyncio
 from pyppeteer import launch
 import random
 import time
+import io
 
 '''
 
@@ -16,7 +17,7 @@ SSH_INFO:
 [
   {"hostname": "xx.serv00.com","username": "serv00的账号", "password": "serv00的密码", "panel": "panel6.serv00.com"},
   {"hostname": "s5.serv00.com","username": "ct8的账号", "password": "ct8的密码", "panel": "panel.ct8.pl"},
-  {"hostname": "s6.serv00.com","username": "user2", "password": "password2", "panel": "panel6.serv00.com"}
+  {"hostname": "s6.serv00.com","username": "user2", "password": "password2", "panel": "panel6.serv00.com", "pkeyflag":"0"}
 ]
 
 LOGIN_TYPE:
@@ -38,6 +39,7 @@ MAIL:
 # 从环境变量中获取
 mail = os.getenv('MAIL')
 push = os.getenv('PUSH')
+pkey = os.getenv('PKEY')
 LOGIN_TYPE = os.getenv('LOGIN_TYPE') # ssh or telegram or http
 ssh_info_str = os.getenv('SSH_INFO', '[]')
 host_infos = json.loads(ssh_info_str)
@@ -88,11 +90,25 @@ def ssh_multiple_connections(host_infos, command) -> str:
         hostname = host_info['hostname']
         username = host_info['username']
         password = host_info['password']
+        pkeyflag ="0"
+        pkeyflagstr = host_info['pkeyflag']
+        if 'pkeyflag' in host_info.keys():
+            pkeyflag=pkeyflagstr
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=hostname, port=22, username=username, password=password)
+            
+            if '0' == pkeyflag:
+                # 密码连接ssh
+                ssh.connect(hostname=hostname, port=22, username=username, password=password)
+            else:
+                # 密钥连接ssh
+                mykey = paramiko.RSAKey.from_private_key(io.StringIO(pkey))
+                ssh.connect(hostname=hostname, port=22, username=username, pkey=mykey, timeout=30)
+            
             stdin, stdout, stderr = ssh.exec_command(command)
+            stdin.close()
+
             stdout_content = stdout.read().decode().strip()
             print('ssh 回显信息：',stdout_content)
             stdout_contents.append(stdout_content)
